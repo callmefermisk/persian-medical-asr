@@ -1,5 +1,6 @@
 torch
-torchaudio
+torchao==0.16.0
 transformers
 peft
 accelerate
+gradio
