@@ -72,6 +72,25 @@ python transcribe.py
 
 ```
 
+---
+
+## Running on Google Colab
+
+You can run this project on Google Colab with a free T4 GPU without any local environment setup.
+
+### Step 1: Enable Hardware Accelerator
+1. Open a new notebook at [Google Colab](https://colab.research.google.com).
+2. Go to **Runtime** > **Change runtime type**.
+3. Select **T4 GPU** under Hardware accelerator and click **Save**.
+
+### Step 2: Clone and Install
+Run this in the first Colab cell:
+
+```bash
+!git clone [https://github.com/callmefermisk/persian-medical-asr.git](https://github.com/callmefermisk/persian-medical-asr.git)
+%cd persian-medical-asr
+!pip install -q -r requirements.txt
+
 ### Transcribe External Audio
 
 Pass the relative or absolute path of any `.wav` or `.mp3` file:
