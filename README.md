@@ -34,6 +34,8 @@ persian_medical_asr/
 │
 ├── sample.wav                     # Verification audio sample (Persian consultation)
 ├── transcribe.py                  # Standalone inference engine (CLI)
+├── app.py                         # Interactive Gradio web interface
+├── run_colab.py                   # Google Colab entrypoint with public link
 ├── requirements.txt               # Package dependencies
 └── README.md                      # Project documentation and reproduction steps
 
@@ -41,29 +43,42 @@ persian_medical_asr/
 
 ---
 
-## Installation & Setup
+## Installation & Setup (Local Environment)
 
 ### 1. Prerequisites
 
 * Python 3.9 or higher
-* Recommended: NVIDIA GPU with CUDA support (CPU execution is supported out of the box).
+* Recommended: NVIDIA GPU with CUDA support (CPU execution is fully supported out of the box).
 
 ### 2. Install Dependencies
 
 Clone the repository and install the required packages:
 
 ```bash
+git clone [https://github.com/callmefermisk/persian-medical-asr.git](https://github.com/callmefermisk/persian-medical-asr.git)
+cd persian-medical-asr
 pip install -r requirements.txt
 
 ```
 
 ---
 
-## Usage & Inference
+## Local Usage & Inference
 
-The inference script (`transcribe.py`) automatically detects hardware accelerators (CUDA/CPU), formats incoming waveforms to 16 kHz mono, dynamically mounts the LoRA adapter, and outputs decoded text.
+The inference scripts automatically detect hardware accelerators (CUDA/CPU), format incoming waveforms to 16 kHz mono, dynamically mount the LoRA adapter, and output decoded text.
 
-### Run Verification Test
+### Option 1: Interactive Web UI (Microphone & Upload)
+
+Launch the local web application:
+
+```bash
+python app.py
+
+```
+
+*Opens an interactive interface at `http://127.0.0.1:7860` for live microphone recording and audio file transcription.*
+
+### Option 2: CLI Verification Test
 
 Transcribe the bundled clinical sample:
 
@@ -72,28 +87,9 @@ python transcribe.py
 
 ```
 
----
+### Option 3: Transcribe Any Audio File
 
-## Running on Google Colab
-
-You can run this project on Google Colab with a free T4 GPU without any local environment setup.
-
-### Step 1: Enable Hardware Accelerator
-1. Open a new notebook at [Google Colab](https://colab.research.google.com).
-2. Go to **Runtime** > **Change runtime type**.
-3. Select **T4 GPU** under Hardware accelerator and click **Save**.
-
-### Step 2: Clone and Install
-Run this in the first Colab cell:
-
-```bash
-!git clone [https://github.com/callmefermisk/persian-medical-asr.git](https://github.com/callmefermisk/persian-medical-asr.git)
-%cd persian-medical-asr
-!pip install -q -r requirements.txt
-
-### Transcribe External Audio
-
-Pass the relative or absolute path of any `.wav` or `.mp3` file:
+Pass the path of any `.wav` or `.mp3` recording:
 
 ```bash
 python transcribe.py path/to/consultation.wav
@@ -101,6 +97,47 @@ python transcribe.py path/to/consultation.wav
 ```
 
 > **Note on Initial Run:** During the first execution, Hugging Face will automatically download and cache the base Whisper Large-v3 model (`nezamisafa/whisper-persian-v4`, ~3 GB). All subsequent runs execute offline.
+
+---
+
+## Running on Google Colab
+
+You can run this project on Google Colab with a free T4 GPU without any local environment setup.
+
+### Step 1: Enable Hardware Accelerator
+
+1. Open a new notebook at [Google Colab](https://colab.research.google.com).
+2. Go to **Runtime** > **Change runtime type**.
+3. Select **T4 GPU** under Hardware accelerator and click **Save**.
+
+### Step 2: Clone and Install
+
+Run this in the first Colab cell:
+
+```bash
+!git clone [https://github.com/callmefermisk/persian-medical-asr.git](https://github.com/callmefermisk/persian-medical-asr.git)
+%cd persian-medical-asr
+!pip install -q -r requirements.txt
+
+```
+
+### Step 3: Run Inference
+
+* **Option A: Interactive Web Demo (Public Gradio Link)**
+```bash
+!python run_colab.py
+
+```
+
+
+*Click the generated public `https://xxxx.gradio.live` URL to test via microphone or file upload directly from your browser.*
+* **Option B: Quick CLI Verification**
+```bash
+!python transcribe.py
+
+```
+
+
 
 ---
 
@@ -112,4 +149,3 @@ python transcribe.py path/to/consultation.wav
 * **LoRA Parameters:** $r = 16$, $\alpha = 32$, Dropout = $0.05$
 * **Precision:** Mixed Precision FP16
 * **Preprocessing:** Waveforms downsampled to 16,000 Hz single-channel; labels truncated to 448 decoder tokens.
-
