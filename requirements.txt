@@ -1,6 +1,8 @@
-torch
-torchao==0.16.0
-transformers
-peft
-accelerate
-gradio
+torch>=2.1.0
+torchaudio>=2.1.0
+transformers>=4.40.0
+accelerate>=0.28.0
+soundfile>=0.12.1
+pydub>=0.25.1
+edge-tts>=6.1.10
+git+https://github.com/pyannote/pyannote-audio.git
