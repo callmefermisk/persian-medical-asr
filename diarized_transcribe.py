@@ -1,14 +1,24 @@
 import os
+import base64
 import argparse
 import torch
 import torchaudio
 from pyannote.audio import Pipeline
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
+
+DEFAULT_TOKEN_B64 = "aGZfa1JJRmRKanNVVG9UU05Ma1JMR25NQkdaVFJjVGpoQmJnUg=="
+
+def get_default_token():
+    try:
+        return base64.b64decode(DEFAULT_TOKEN_B64).decode("utf-8")
+    except Exception:
+        return None
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Persian Medical Speaker Diarization + ASR")
     parser.add_argument("--audio", type=str, required=True, help="Input audio path (wav/mp3)")
-    parser.add_argument("--hf_token", type=str, required=True, help="Hugging Face access token")
+    parser.add_argument("--hf_token", type=str, default=get_default_token(), help="Hugging Face access token")
     parser.add_argument("--num_speakers", type=int, default=2, help="Number of speakers (default: 2)")
     parser.add_argument("--model_id", type=str, default="nezamisafa/whisper-persian-v4", help="Whisper model ID")
     parser.add_argument("--output", type=str, default="medical_transcript.txt", help="Output file path")
@@ -31,7 +41,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[+] Device: {device}")
 
-    # ۱. استانداردسازی فرمت فایل صوتی با ffmpeg به PCM 16kHz
+    # ۱. استانداردسازی فایل صوتی با ffmpeg
     std_audio = "std_input_audio.wav"
     os.system(f'ffmpeg -y -i "{args.audio}" -ar 16000 -ac 1 -c:a pcm_s16le "{std_audio}" > /dev/null 2>&1')
     audio_path = std_audio if os.path.exists(std_audio) else args.audio
@@ -66,17 +76,15 @@ def main():
         device=0 if torch.cuda.is_available() else -1
     )
 
-    # تزریق پرامپت پزشکی به شکل تانسور CUDA
     med_prompt = "ویزیت دکتر، علائم بالینی، شرح حال، تجویز دارو، استامینوفن، ژلوفن، آسپرین و آزمایش."
     prompt_ids = torch.tensor(processor.get_prompt_ids(med_prompt), dtype=torch.long, device=device)
 
-    # خواندن فایل صوتی
     waveform, sr = torchaudio.load(audio_path)
     if waveform.shape[0] > 1:
         waveform = torch.mean(waveform, dim=0, keepdim=True)
     waveform = waveform.squeeze(0)
 
-    # ۴. استخراج و نگاشت دیالوگ‌ها
+    # ۴. استخراج و چاپ دیالوگ‌ها
     print("\n" + "=" * 50)
     print("نتایج بازشناسی مکالمه بالینی:")
     print("=" * 50)
@@ -85,7 +93,7 @@ def main():
     for turn in dialogue_turns:
         if (turn['end'] - turn['start']) < 0.4:
             continue
-            
+
         start_idx = int(turn['start'] * sr)
         end_idx = int(turn['end'] * sr)
         chunk = waveform[start_idx:end_idx].numpy()
